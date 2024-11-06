@@ -100,24 +100,49 @@ def div2 (n k : Nat) (ok : k > 0) : Nat :=
       | succ n' => simp_arith
     have : n - k < n := by apply Nat.sub_lt <;> assumption
     1 + div (n - k) k ok
-termination_by div2 n k ok => n -- unused, fun is not recursive
+-- termination_by div2 n k ok => n -- unused, fun is not recursive
 
 -- EXERCISES
+-- NOTE: These exercises give no indication whatsoever about what CAN be used.
+-- Most of them can be done with simp or simp_arith, which makes them trivial.
+-- They can also be done by using Nat built-in proofs, which defeats the purpose.
+-- I also don't know how to manually apply defs of <, <=, +, -.
+-- I wish more details were given...
+
 -- Prove the following theorems:
 -- For all natural numbers n, 0 < n+1
-theorem ex1 (n : Nat) : 0 < n + 1 := by simp
+theorem ex1 (n : Nat) : 0 < n + 1 := by
+  induction n with
+  | zero      => exact Nat.zero_lt_one
+  | succ k ih => exact Nat.lt_trans ih (Nat.lt_add_one (k + 1))
 
 -- For all natural numbers n, 0 ≤ n
-theorem ex2 (n : Nat) : 0 ≤ n := by simp
+theorem ex2 (n : Nat) : 0 ≤ n := by
+  induction n with
+  | zero      => exact Nat.le_of_eq rfl
+  | succ k ih => exact Nat.le_trans ih (Nat.le_add_right k 1)
 
 -- For all natural numbers n, n − n = 0
-theorem ex3 (n : Nat) : n - n = 0 := by simp
+theorem ex3 (n : Nat) : n - n = 0 := by
+  induction n with
+  | zero      => rfl
+  | succ k ih => rw [Nat.add_comm, Nat.sub_add_eq, Nat.add_comm]; exact ih
 
 -- For all natural numbers n,k, (n + 1) − (k + 1) = n − k
-theorem ex4 (n k : Nat) : (n + 1) - (k + 1) = n - k := by simp
+theorem ex4 (n k : Nat) : (n + 1) - (k + 1) = n - k := by
+  induction k with
+  | zero      => rfl
+  | succ _ ih => rw [Nat.sub_add_eq, ih, Nat.sub_add_eq]
 
 -- For all natural numbers n,k, if k < n then n ≠ 0
-theorem ex5 (n k : Nat) (h : k < n) : n ≠ 0 := by sorry
+theorem ex5 (n k : Nat) (h : k < n) : n ≠ 0 := by
+  induction k with
+  | zero      => apply Nat.not_eq_zero_of_lt h
+  | succ a ih =>
+    have g : a < a + 1 := by apply Nat.lt_add_one
+    exact ih (Nat.lt_trans g h)
 
 -- For all natural numbers n,k, if n + 1 < k then n < k
-theorem ex6 (n k : Nat) (h : n + 1 < k) : n < k := by sorry
+theorem ex6 (n k : Nat) (h : n + 1 < k) : n < k := by
+  have g : n < n + 1 := by apply Nat.lt_add_one
+  exact Nat.lt_trans g h
